@@ -1624,6 +1624,7 @@ int initPatch()
 
         patchMemory(0x08441f99, "eb60");            // tickInitAddress
 		patchMemory(0x08332AD4, "30302E30");        // 192.168.37.0/24 -> 192.168.00.0/24
+		patchMemory(0x0828471A, "889b9b08");        // enable virtual card
 
         // Mesa Patches
         if (GPUVendor != NVIDIA_GPU)
