@@ -30,6 +30,7 @@ int phIsDragging = 0;
 extern void *customCursor;
 extern void *phTouchCursor;
 extern bool phShowCursorInGame;
+bool g_trigger_i_key = false;
 
 int initInput()
 {
@@ -521,6 +522,8 @@ void sdlEventDriving(SDL_Event *event)
             setSwitch(SYSTEM, BUTTON_TEST, event->type == SDL_KEYDOWN);
         else if (event->key.keysym.sym == SDLK_s)
             setSwitch(PLAYER_1, BUTTON_SERVICE, event->type == SDL_KEYDOWN);
+        else if (event->key.keysym.sym == SDLK_i)
+            g_trigger_i_key = (event->type == SDL_KEYDOWN);
         else if (event->key.keysym.sym == SDLK_5)
             incrementCoin(PLAYER_1, event->type == SDL_KEYDOWN);
         else if (event->key.keysym.sym == SDLK_1)

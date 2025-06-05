@@ -2,3 +2,4 @@
 
 int initInput();
 void handleSdlEvents(SDL_Event *event);
+extern bool g_trigger_i_key;

@@ -25,6 +25,7 @@
 #include "customcursor.h"
 #include "drawtext.h"
 #include "network.h"
+#include "input.h"
 
 extern uint32_t gId;
 char elfID[4];
@@ -142,6 +143,13 @@ void replaceCallAtAddress(size_t address, void *function)
 int stubRetZero()
 {
     return 0;
+}
+
+int checkTrgOn(int param_1, long param_2)
+{
+	if (param_2 == 0x1000 && g_trigger_i_key)
+		return 1;
+	return 0;
 }
 
 void stubReturn()
@@ -1619,13 +1627,18 @@ int initPatch()
         detourFunction(0x08307b62, stubRetOne);     // Skip Kickback initialization
         detourFunction(0x084de0dc, stubRetZero);    // doesNeedRollerCleaning
         detourFunction(0x084de0f8, stubRetZero);    // doesNeedStockerCleaning
-        // patchMemory(0x089e308c, "BA");           // Skips initialization
+        patchMemory(0x089e308c, "BA");           // Skips initialization
         patchMemory(0x08788e59, "e92601000090");    // Prevents Full Screen set from the game
 
         patchMemory(0x08441f99, "eb60");            // tickInitAddress
 		patchMemory(0x08332AD4, "30302E30");        // 192.168.37.0/24 -> 192.168.00.0/24
-		patchMemory(0x0828471A, "889b9b08");        // enable virtual card
-
+        patchMemory(0x0828471A, "889b9b08");        // enable virtual card
+        //detourFunction(0x081cfe8e, stubRetOne);
+        // patchMemory(0x081cf704, "75");08776906
+	
+        patchMemory(0x081cf685, "74");              // enable card behavior emulation
+        detourFunction(0x08776906, checkTrgOn);
+	
         // Mesa Patches
         if (GPUVendor != NVIDIA_GPU)
         {
