@@ -15,6 +15,8 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 
 #include "config.h"
 #include "resolution.h"
@@ -147,9 +149,52 @@ int stubRetZero()
 
 int checkTrgOn(int param_1, long param_2)
 {
-	if (param_2 == 0x1000 && g_trigger_i_key)
-		return 1;
-	return 0;
+    if (param_2 == 0x1000 && g_trigger_i_key)
+        return 1;
+    return 0;
+}
+
+int getHostByName(struct in_addr *param_1, const char *param_2)
+{
+    printf("Called getHostByName: %s \n", param_2);
+    if (strcmp(param_2, "tenporouter.loc") == 0 || strcmp(param_2, "bbrouter.loc") == 0)
+    {
+        struct in_addr fake_addr;
+        fake_addr.s_addr = htonl(0x0A0000FE);
+        printf("Returning fake addr: %s.\n", inet_ntoa(fake_addr));
+        param_1->s_addr = fake_addr.s_addr;
+        return 1;
+    }
+
+    char *buf = (char *)malloc(0x2000);
+    if (buf == NULL)
+    {
+        param_1->s_addr = 0;
+        return 0;
+    }
+
+    int retCode = 0;
+    int herrno = 0;
+    struct hostent hostbuf;
+    struct hostent *result = NULL;
+
+    param_1->s_addr = 0;
+
+    retCode = gethostbyname_r(param_2, &hostbuf, buf, 0x2000, &result, &herrno);
+
+    if (retCode == 0 && result != NULL)
+    {
+        if (hostbuf.h_addrtype == AF_INET && hostbuf.h_addr_list[0] != NULL)
+        {
+            param_1->s_addr = *(in_addr_t *)hostbuf.h_addr_list[0];
+            free(buf);
+            return 1;
+        }
+    }
+
+    free(buf);
+    param_1->s_addr = 0;
+    return 0;
 }
 
 void stubReturn()
@@ -211,7 +256,7 @@ int amDongleUserInfoEx(int a, int b, char *_arcadeContext)
     case INITIALD_4_REVB:
     case INITIALD_4_REVC:
     case INITIALD_4_REVD:
-    case INITIALD_4_REVD_SERVERBOX:   
+    case INITIALD_4_REVD_SERVERBOX:
     case INITIALD_4_REVG:
     case INITIALD_4_EXP_REVB:
     case INITIALD_4_EXP_REVC:
@@ -1317,7 +1362,7 @@ int initPatch()
         detourFunction(0x08078bcc, drawText); // Hook onto DemoDraw::DrawText
         //detourFunction(0x081033ed, amOsinfoGetNetworkProperty); // amOsinfoGetNetworkPropertyEth0
         //detourFunction(0x08103962, amOsinfoGetNetworkProperty); // amOsinfoGetNetworkProperty
-        detourFunction(0x08102176, amOsinfoGetDhcpStatusEth0Ex); // 
+        detourFunction(0x08102176, amOsinfoGetDhcpStatusEth0Ex); //
         detourFunction(0x0807f6de, stubRetOne); // is interface up?
         detourFunction(0x0807f60c, getIPAddress); // got IP Address?
 
@@ -1635,10 +1680,10 @@ int initPatch()
         patchMemory(0x0828471A, "889b9b08");        // enable virtual card
         //detourFunction(0x081cfe8e, stubRetOne);
         // patchMemory(0x081cf704, "75");08776906
-	
+
         patchMemory(0x081cf685, "74");              // enable card behavior emulation
         detourFunction(0x08776906, checkTrgOn);
-	
+
         // Mesa Patches
         if (GPUVendor != NVIDIA_GPU)
         {
@@ -1689,9 +1734,10 @@ int initPatch()
         detourFunction(0x080fbcc5, amDipswGetData);
         detourFunction(0x080fbd3c, amDipswSetLed); // amDipswSetLED
 
-        detourFunction(0x08078e3c, drawText);                   // Hook onto DemoDraw::DrawTextA
-        detourFunction(0x08114034, stubRetThree);               // altrServer()
-        patchMemory(0x0807fe5a, "e9e9000000");                  // Skip network setup
+        detourFunction(0x08078e3c, drawText); // Hook onto DemoDraw::DrawTextA
+        detourFunction(0x0807f74e, getHostByName);
+        detourFunction(0x08114034, stubRetThree); // altrServer()
+        patchMemory(0x0807fe5a, "e9e9000000");    // Skip network setup
     }
     break;
     case INITIALD_5_JAP_REVF: // ID5 - DVP-0070F
