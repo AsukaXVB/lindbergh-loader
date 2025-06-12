@@ -16,7 +16,7 @@ Please note other dependencies might be required to run games (see the [guide](d
 ```shell
 sudo dpkg --add-architecture i386
 sudo apt update
-sudo apt install git build-essential gcc-multilib freeglut3-dev:i386 libsdl2-dev:i386 libfaudio-dev:i386
+sudo apt install git build-essential gcc-multilib freeglut3-dev:i386 libsdl2-dev:i386 libfaudio-dev:i386 libsdl2-ttf-dev:i386 libxmu6:i386
 ```
 
 This emulator will need access to the input devices and serial devices on your computer. You should add your user account to the following groups and then _restart your computer_.
