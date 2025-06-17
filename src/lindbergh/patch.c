@@ -1600,20 +1600,26 @@ int initPatch()
         amDipswContextAddr = (void *)0x09427128;
         detourFunction(0x0893c594, amDipswInit);
         detourFunction(0x0893c618, amDipswExit);
-        detourFunction(0x0893c68d, amDipswGetData);
+        detourFunction(0x0893c68d, amDipswGetData);// securityBoard.dipSwitch[1] = 1; to enable Chinese localization
         detourFunction(0x0893c703, amDipswSetLed); // amDipswSetLed
         detourFunction(0x0832fe46, stubRetOne);    // isEthLinkUp
         patchMemory(0x084566d8, "e991000000");     // tickWaitDHCP
         patchMemory(0x084587cb, "eb60");           // tickInitAddress
         patchMemory(0x08455914, "C0270900");       // tickInitStoreNetwork
         detourFunction(0x08944106, stubRetZero);   // amOsinfoExecDhcpNic
-        detourFunction(0x08513810, stubRetZero);   // isUseServerBox
+        // detourFunction(0x08513810, stubRetZero);   // isUseServerBox
         patchMemory(0x0845964e, "40b3e3");         // seqInitWheel
         detourFunction(0x084fa5de, stubRetZero);   // doesNeedRollerCleaning
         detourFunction(0x084fa5fa, stubRetZero);   // doesNeedStockerCleaning
         patchMemory(0x08455391, "c7c300030000");   // Moves Initializing text
-        patchMemory(0x08513c40, "00");             // Network init just once
+        // patchMemory(0x08513c40, "00");             // Network init just once
         patchMemory(0x08a0f9cc, "25");             // Skips initialization
+
+        // Built-in Card Emulation
+        patchMemory(0x0829254d, "88539e08");
+        patchMemory(0x081d7965, "74");
+        detourFunction(0x08794296, checkTrgOn);
+
         patchMemory(0x087a67e9, "e92601000090");   // Prevents Full Screen set from the game
 
         // amsInit
