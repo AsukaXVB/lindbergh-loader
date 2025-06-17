@@ -458,7 +458,7 @@ static int detectGame(uint32_t elf_crc)
     {
         config.gameTitle = "Initial D5 5 EXP 2.0";
         config.gameDVP = "DVP-0084A";
-        config.gameID = "SBQN";
+        config.gameID = "SBTS";
         config.gameReleaseYear = "2009";
         config.gameNativeResolutions = "1360x768";
         config.gameStatus = WORKING;
