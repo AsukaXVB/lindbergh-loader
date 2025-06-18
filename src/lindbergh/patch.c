@@ -271,6 +271,9 @@ int amDongleUserInfoEx(int a, int b, char *_arcadeContext)
     case INITIALD_5_EXP_20A:
         memcpy(_arcadeContext, elfID, 4);
         break;
+    case INITIALD_5_EXP_20A_SERVERBOX:
+        memcpy(_arcadeContext, "SBTS", 4);
+        break;
     default:
         break;
     }
@@ -1640,6 +1643,51 @@ int initPatch()
         detourFunction(0x083973a4, stubRetOne); // isExistNewerSource
         detourFunction(0x0807b6c0, gl_XGetProcAddressARB);
         patchMemory(0x08761cce, "00"); // Fix cutscenes
+    }
+    break;
+    case INITIALD_5_EXP_20A_SERVERBOX:
+    {
+        if (config->showDebugMessages == 1)
+        {
+            setVariable(0x083b8ee4, 2);          // amBackupDebugLevel
+            setVariable(0x083b8f00, 2);          // amCreditDebugLevel
+            setVariable(0x083b9158, 2);          // amDipswDebugLevel
+            setVariable(0x083b915c, 2);          // amDongleDebugLevel
+            setVariable(0x083b9160, 2);          // amEepromDebugLevel
+            setVariable(0x083b9164, 2);          // amHwmonitorDebugLevel
+            setVariable(0x083b9168, 2);          // amJvsDebugLevel
+            setVariable(0x083b916c, 2);          // amLibDebugLevel
+            setVariable(0x083b9170, 2);          // amMiscDebugLevel
+            setVariable(0x083b9178, 2);          // amSysDataDebugLevel
+            setVariable(0x083b9180, 2);          // bcLibDebugLevel
+            setVariable(0x083b9174, 2);          // amOsinfoDebugLevel
+            setVariable(0x083b9184, 0x0FFFFFFF); // s_logMask
+            // detourFunction(0x0852add8, _putConsoleSeparate); // Debug Messages
+        }
+        // Security
+        detourFunction(0x08100f65, amDongleInit);
+        detourFunction(0x080ff7f1, amDongleIsAvailable);
+        detourFunction(0x08100312, amDongleUpdate);
+        detourFunction(0x08100e2b, amDongleUserInfoEx);
+        detourFunction(0x08100816, stubRetOne); // amDongleDecryptEx
+        // memcpy(elfID, (void *)0x087929d8, 4); // Gets gameID from the ELF
+        //   Fixes
+        amDipswContextAddr = (void *)0x083c18e8; // Address of amDipswContext
+        detourFunction(0x080ff584, amDipswInit);
+        detourFunction(0x080ff608, amDipswExit);
+        detourFunction(0x080ff67d, amDipswGetData);
+        detourFunction(0x080ff6f3, amDipswSetLed); // amDipswSetLED
+
+        detourFunction(0x0807925c, drawText); // Hook onto DemoDraw::DrawTextA
+        detourFunction(0x0807feda, getHostByName);
+        detourFunction(0x081186e4, stubRetThree); // altrServer()
+        patchMemory(0x080805e2, "e937010000");    // Skip network setup
+        detourFunction(0x0807f4ba, stubRetOne);
+
+        patchMemory(0x0807bfae, "84");
+        patchMemory(0x0807df91, "84");
+        
+        detourFunction(0x080fb520, stubRetZero); // Eliminates amsInit Function
     }
     break;
     case INITIALD_5_JAP_REVA: // ID5 - DVP-0070A

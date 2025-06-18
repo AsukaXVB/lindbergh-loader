@@ -34,6 +34,7 @@
 #define INITIALD_5_EXP 0x701b88cf                            // DVP-0075
 #define INITIALD_5_EXP_20 0x77c6b58b                         // DVP-0084
 #define INITIALD_5_EXP_20A 0xd4910e75                        // DVP-0084A
+#define INITIALD_5_EXP_20A_SERVERBOX 0xcf40a9c2              // DVP-0084A
 #define LETS_GO_JUNGLE 0xb1c8c901                            // DVP-0011
 #define LETS_GO_JUNGLE_REVA 0xc697c4fb                       // DVP-0011A
 #define LETS_GO_JUNGLE_SPECIAL 0x240beedc                    // DVP-0036A

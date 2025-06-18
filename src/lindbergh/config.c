@@ -456,7 +456,7 @@ static int detectGame(uint32_t elf_crc)
 
     case INITIALD_5_EXP_20A:
     {
-        config.gameTitle = "Initial D5 5 EXP 2.0";
+        config.gameTitle = "Initial D Arcade Stage 5 EXP Rev A";
         config.gameDVP = "DVP-0084A";
         config.gameID = "SBTS";
         config.gameReleaseYear = "2009";
@@ -465,6 +465,21 @@ static int detectGame(uint32_t elf_crc)
         config.gameType = DRIVING;
         config.width = 1360;
         config.height = 768;
+        return 0;
+    }
+    break;
+
+    case INITIALD_5_EXP_20A_SERVERBOX:
+    {
+        config.gameTitle = "Initial D Arcade Stage 5 EXP Rev A (Server Box)";
+        config.gameDVP = "DVP-0084A";
+        config.gameID = "SBTS";
+        config.gameReleaseYear = "2009";
+        config.gameNativeResolutions = "1360x768";
+        config.gameStatus = WORKING;
+        config.gameType = DRIVING;
+        config.width = 640;
+        config.height = 480;
         return 0;
     }
     break;

@@ -100,6 +100,7 @@ uint32_t cleanElfCRC32[] = {
     0x4442EA15, // DVP-0083  | hummer_Master.elf
     0x8DF6BBF9, // DVP-0084  | id5.elf
     0x2AF8004E, // DVP-0084A | id5.elf
+    0x3A04D459, // DVP-0084A | id5.elf (ServerBox)
     0xB95528F4, // DVP-5004  | vf5
     0x012E4898, // DVP-5004D | vf5
     0x74465F9F, // DVP-5004G | vf5
@@ -205,6 +206,7 @@ void isCleanElf(char *command)
         printf("Warning: The ELF you are running is not Clean and might cause unwanted behavior.\n");
         printf("         Make sure you ELF and game dump are clean before reporting issues.\n");
         printf("         If you are sure the ELF is clean, please report it to us.\n");
+        printf("0x%X", crc);
         printf("\033[0m");
     }
 }

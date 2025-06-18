@@ -2325,6 +2325,65 @@ int initResolutionPatches()
         }
     }
     break;
+    case INITIALD_5_EXP_20A_SERVERBOX:
+    {
+        bool origRes = (gWidth == 640 && gHeight == 480);
+        if (!getConfig()->boostRenderRes && origRes)
+        {
+            break;
+        }
+        if (gWidth >= 1360 && gHeight >= 768)
+        {
+            patchMemory(0x08363d94, "bb01000000eb6b"); // Prevents renrer.ini from loading
+            setVariable(0x08363c70, gWidth);           // Framebuffer Main Width
+            setVariable(0x08363c77, gHeight);          // Framebuffer Main Height
+            setVariable(0x08363d11, 256);              // Framebuffer Road Specular width
+            setVariable(0x08363d18, 256);              // Framebuffer Road Specular height
+            setVariable(0x08363d37, gWidth);           // Framebuffer Glare Width
+            setVariable(0x08363d3e, gHeight);          // Framebuffer Glare Height
+            setVariable(0x08363d64, gWidth >> 2);      // Framebuffer Reduced width
+            patchMemory(0x08363d89, "00000001");       // Enable Cube Secular
+            if (origRes)
+                break;
+        }
+        patchMemory(0x0855a6dd, "E9f000"); // Accept different Resolutions
+        setVariable(0x0855a7d3, gWidth);   // Set ResX
+        setVariable(0x0855a7d8, gHeight);  // Set ResY
+
+        // Fix Press start and Insert coins text
+        idDisplayTextureCAVEAddress = (void *)0x084fe1d0 + 5;
+        detourFunction(0x084fe1d0, idDisplayTexture);
+        // setViewport for track selection screen
+        setVariable(0x0821e8ee, (int)(gHeight * (112.0 / 768)));
+        setVariable(0x0821e8f6, (int)(gWidth * (724.0 / 1315)));
+        setVariable(0x0821e8fe, (int)(gHeight * (592.0 / 768)));
+        setVariable(0x0821e906, (int)(gWidth * (962.0 / 1315)));
+        setVariable(0x0821e90e, gHeight);
+        // FSAA
+        patchMemory(0x08777846, "9090");
+        patchMemory(0x087a56e9, "01"); // FSAA Enabled
+        setVariable(0x08cf9ce8, 1);    // FSAA Quality
+        // Ballon fix
+        idDrawBallonCAVEAddress = (void *)0x0825c1b6 + 6;
+        iddrawBallonPutAddress = (void *)0x086ef38c;
+        detourFunction(0x0825c1b6, idDrawBallon);
+        replaceCallAtAddress(0x0825d656, idBalloonPut);
+        replaceCallAtAddress(0x0825d717, idBalloonPut);
+        // START and VIEW CHANGE Text fix
+        float explanationScaleX = gWidth - (1360.0 - 815.0);
+        float explanationScaleY = (gHeight / 768.0) * 680.0;
+        setVariable(0x08273915, *(unsigned int *)&explanationScaleY);
+        setVariable(0x0827398d, *(unsigned int *)&explanationScaleX);
+        // Scale Testmode text
+        if (isTestMode() && gWidth >= 1920)
+        {
+            patchMemory(0x08ca3d00, "02");
+            idTextShift = (gWidth == 1920 ? 27 : ((1920 / gWidth) * 27) + 2);
+            idTestTextAddress = (void *)0x087929bc;
+            replaceCallAtAddress(0x085254ea, idTestText);
+        }
+    }
+    break;
     case INITIALD_5_JAP_REVA: // ID5 - DVP-0070A
     {
         bool origRes = (gWidth == 1360 && gHeight == 768);
