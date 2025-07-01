@@ -24,6 +24,8 @@ int initSecurityBoard()
 {
     securityBoard.dipSwitch[DIP_SWITCH_ROTATION] = 0;
 
+    // securityBoard.dipSwitch[1] = 1; to enable D5 EXP Chinese localization
+
     return 0;
 }
 

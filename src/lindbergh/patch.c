@@ -1603,7 +1603,7 @@ int initPatch()
         amDipswContextAddr = (void *)0x09427128;
         detourFunction(0x0893c594, amDipswInit);
         detourFunction(0x0893c618, amDipswExit);
-        detourFunction(0x0893c68d, amDipswGetData);// securityBoard.dipSwitch[1] = 1; to enable Chinese localization
+        detourFunction(0x0893c68d, amDipswGetData);
         detourFunction(0x0893c703, amDipswSetLed); // amDipswSetLed
         detourFunction(0x0832fe46, stubRetOne);    // isEthLinkUp
         patchMemory(0x084566d8, "e991000000");     // tickWaitDHCP
