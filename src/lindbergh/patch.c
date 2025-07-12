@@ -257,6 +257,8 @@ int amDongleUserInfoEx(int a, int b, char *_arcadeContext)
     case INITIALD_4_REVC:
     case INITIALD_4_REVD:
     case INITIALD_4_REVD_SERVERBOX:
+        memcpy(_arcadeContext, "SBML", 4);
+        break;
     case INITIALD_4_REVG:
     case INITIALD_4_EXP_REVB:
     case INITIALD_4_EXP_REVC:
@@ -1362,12 +1364,15 @@ int initPatch()
         detourFunction(0x080fac61, amDipswGetData);
         detourFunction(0x080facd8, amDipswSetLed); // amDipswSetLED
 
-        detourFunction(0x08078bcc, drawText); // Hook onto DemoDraw::DrawText
-        //detourFunction(0x081033ed, amOsinfoGetNetworkProperty); // amOsinfoGetNetworkPropertyEth0
-        //detourFunction(0x08103962, amOsinfoGetNetworkProperty); // amOsinfoGetNetworkProperty
+        detourFunction(0x08078bcc, drawText);                    // Hook onto DemoDraw::DrawText
+        detourFunction(0x0807f826, stubRetOne);                  // doDHCPClient
+        detourFunction(0x08103962, stubRetZero);                 // amOsinfoGetNetworkProperty
         detourFunction(0x08102176, amOsinfoGetDhcpStatusEth0Ex); //
-        detourFunction(0x0807f6de, stubRetOne); // is interface up?
-        detourFunction(0x0807f60c, getIPAddress); // got IP Address?
+        detourFunction(0x0807f6de, stubRetOne);                  // is interface up?
+        detourFunction(0x0807f60c, getIPAddress);                // got IP Address?
+
+        patchMemory(0x0807fa63, "eb"); // skip gateway check
+        patchMemory(0x0807fac6, "eb"); // skip dns check
 
         /*detourFunction(0x0821f5cc, stubRetOne); // isEthLinkUp
         patchMemory(0x082cd3b2, "c0270900");    // tickInitStoreNetwork
