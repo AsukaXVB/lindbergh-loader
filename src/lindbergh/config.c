@@ -424,6 +424,21 @@ static int detectGame(uint32_t elf_crc)
     }
     break;
 
+    case INITIALD_4_REVG_SERVERBOX:
+    {
+        config.gameTitle = "Initial D Arcade Stage 4 Rev G (Server Box)";
+        config.gameID = "SBML";
+        config.gameDVP = "DVP-0019G";
+        config.gameReleaseYear = "2008";
+        config.gameNativeResolutions = "640x480";
+        config.gameStatus = NOT_WORKING;
+        config.gameType = DRIVING;
+        config.width = 640;
+        config.height = 480;
+        return 0;
+    }
+    break;
+
     case INITIALD_5_EXP:
     {
         config.gameTitle = "Initial D5 EXP";
@@ -1221,6 +1236,30 @@ int readConfig(FILE *configFile, EmulatorConfig *config)
 
         else if (strcmp(command, "FREEPLAY") == 0)
             config->freeplay = atoi(getNextToken(NULL, " ", &saveptr));
+        else if (strcmp(command, "NET_ENABLE") == 0)
+            config->net_enable = atoi(getNextToken(NULL, " ", &saveptr));
+
+        else if (strcmp(command, "NET_SUBNET") == 0)
+            strcpy(config->net_subnet, getNextToken(NULL, " ", &saveptr));
+
+        else if (strcmp(command, "NET_NIC") == 0)
+            strcpy(config->net_nic, getNextToken(NULL, " ", &saveptr));
+
+        else if (strcmp(command, "DNS_ENABLE") == 0)
+            config->dns_enable = atoi(getNextToken(NULL, " ", &saveptr));
+
+        else if (strcmp(command, "DNS_DEFAULT") == 0)
+            strcpy(config->dns_default, getNextToken(NULL, " ", &saveptr));
+
+        else if (strcmp(command, "DNS_ROUTER") == 0)
+        {
+            char *dst_addr = getNextToken(NULL, " ", &saveptr);
+            if (strlen(dst_addr) == 0)
+                strcpy(config->dns_router, config->dns_default);
+            else
+                strcpy(config->dns_router, dst_addr);
+        }
+
 
         else if (strcmp(command, "LINDBERGH_COLOUR") == 0)
         {
@@ -1646,6 +1685,11 @@ int initConfig(const char* configFilePath)
     }
 
     config.inputMode = 0; // Default to all inputs
+    config.net_enable = 0;
+    config.dns_enable = 0;
+    strcpy(config.dns_default, "0.0.0.0");
+    strcpy(config.dns_router, "10.0.0.254");
+    strcpy(config.net_nic, "eth0");
 
     char filePath[PATH_MAX];
     strncpy(filePath, CONFIG_PATH, PATH_MAX);

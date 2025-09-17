@@ -91,7 +91,7 @@ int createStaticSection()
     memset(buff, 0, eepromOffsetTable[STATIC].size);
     buff[14] = 0;
     //memcpy(buff + 15, "AAGX-01A00009999", 16);
-    memcpy(buff + 15, "AALG-TG-933F3904", 16);
+    memcpy(buff + 15, "AAGX-01A52379999", 16);
     return 0;
 }
 

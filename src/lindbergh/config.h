@@ -25,6 +25,7 @@
 #define INITIALD_4_REVD 0xba380f8a                           // DVP-0019D
 #define INITIALD_4_REVD_SERVERBOX 0x678f4320                 // DVP-0019D
 #define INITIALD_4_REVG 0x6cb19701                           // DVP-0019G
+#define INITIALD_4_REVG_SERVERBOX 0x60496EEA                 // DVP-0019G
 #define INITIALD_4_EXP_REVB 0xd0c64f3                        // DVP-0030B
 #define INITIALD_4_EXP_REVC 0x65ea22e3                       // DVP-0030C
 #define INITIALD_4_EXP_REVD 0x62cc73a9                       // DVP-0030D
@@ -287,6 +288,12 @@ typedef struct
     float whiteBorderPercentage;
     float blackBorderPercentage;
     int borderEnabled;
+    int net_enable;
+    int dns_enable;
+    char net_subnet[19];
+    char dns_default[16];
+    char dns_router[16];
+    char net_nic[32];
 } EmulatorConfig;
 
 uint32_t get_crc32(const char *s, ssize_t n);

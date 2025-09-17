@@ -154,49 +154,6 @@ int checkTrgOn(int param_1, long param_2)
     return 0;
 }
 
-int getHostByName(struct in_addr *param_1, const char *param_2)
-{
-    printf("Called getHostByName: %s \n", param_2);
-    if (strcmp(param_2, "tenporouter.loc") == 0 || strcmp(param_2, "bbrouter.loc") == 0)
-    {
-        struct in_addr fake_addr;
-        fake_addr.s_addr = htonl(0x0A0000FE);
-        printf("Returning fake addr: %s.\n", inet_ntoa(fake_addr));
-        param_1->s_addr = fake_addr.s_addr;
-        return 1;
-    }
-
-    char *buf = (char *)malloc(0x2000);
-    if (buf == NULL)
-    {
-        param_1->s_addr = 0;
-        return 0;
-    }
-
-    int retCode = 0;
-    int herrno = 0;
-    struct hostent hostbuf;
-    struct hostent *result = NULL;
-
-    param_1->s_addr = 0;
-
-    retCode = gethostbyname_r(param_2, &hostbuf, buf, 0x2000, &result, &herrno);
-
-    if (retCode == 0 && result != NULL)
-    {
-        if (hostbuf.h_addrtype == AF_INET && hostbuf.h_addr_list[0] != NULL)
-        {
-            param_1->s_addr = *(in_addr_t *)hostbuf.h_addr_list[0];
-            free(buf);
-            return 1;
-        }
-    }
-
-    free(buf);
-    param_1->s_addr = 0;
-    return 0;
-}
-
 void stubReturn()
 {
     return;
@@ -205,6 +162,16 @@ void stubReturn()
 int stubRetOne()
 {
     return 1;
+}
+
+int stubRetTwo()
+{
+    return 2;
+}
+
+int stubRetOneOO()
+{
+    return 100;
 }
 
 int stubRetThree()
@@ -257,9 +224,12 @@ int amDongleUserInfoEx(int a, int b, char *_arcadeContext)
     case INITIALD_4_REVC:
     case INITIALD_4_REVD:
     case INITIALD_4_REVD_SERVERBOX:
+    case INITIALD_4_REVG:
         memcpy(_arcadeContext, "SBML", 4);
         break;
-    case INITIALD_4_REVG:
+    case INITIALD_4_REVG_SERVERBOX:
+        memcpy(_arcadeContext, "SBML", 4);
+        break;
     case INITIALD_4_EXP_REVB:
     case INITIALD_4_EXP_REVC:
     case INITIALD_4_EXP_REVD:
@@ -1364,38 +1334,12 @@ int initPatch()
         detourFunction(0x080fac61, amDipswGetData);
         detourFunction(0x080facd8, amDipswSetLed); // amDipswSetLED
 
-        detourFunction(0x08078bcc, drawText);                    // Hook onto DemoDraw::DrawText
-        detourFunction(0x0807f826, stubRetOne);                  // doDHCPClient
-        detourFunction(0x08103962, stubRetZero);                 // amOsinfoGetNetworkProperty
-        detourFunction(0x08102176, amOsinfoGetDhcpStatusEth0Ex); //
-        detourFunction(0x0807f6de, stubRetOne);                  // is interface up?
-        detourFunction(0x0807f60c, getIPAddress);                // got IP Address?
+        detourFunction(0x08078bcc, drawText); // Hook onto DemoDraw::DrawText
+        detourFunction(0x0807f6de, stubRetOne); // is interface up?
 
         patchMemory(0x0807fa63, "eb"); // skip gateway check
         patchMemory(0x0807fac6, "eb"); // skip dns check
 
-        /*detourFunction(0x0821f5cc, stubRetOne); // isEthLinkUp
-        patchMemory(0x082cd3b2, "c0270900");    // tickInitStoreNetwork
-        patchMemory(0x082cd679, "e950010000");  // tickWaitDHCP
-        patchMemory(0x082cedf8, "EB");          // Skip Kickback initialization
-        patchMemory(0x087a024c, "f2");          // Skips initialization
-        patchMemory(0x087a025c, "6f");          // Skips initialization
-        setVariable(0x0855f519, 0x000126e9);    // Avoid Full Screen set from Game*/
-
-        /*if (GPUVendor != NVIDIA_GPU)
-        {
-            detourFunction(0x080789a4, gl_MultiTexCoord2fARB);
-            detourFunction(0x08078a14, gl_Color4ub);
-            detourFunction(0x08078c34, gl_Vertex3f);
-            detourFunction(0x08079354, gl_TexCoord2f);
-            detourFunction(0x080793f4, cg_GLIsProfileSupported);
-            patchMemory(0x0852a33a, "9090");
-            cacheModedShaderFiles();
-            detourFunction(0x08079894, gl_XGetProcAddressARB);
-            detourFunction(0x08079624, gl_ProgramParameters4fvNV);
-        }
-        patchMemory(0x0854ee03, "31C090");      // cgCreateProgram args argument to 0;
-        detourFunction(0x08257470, stubRetOne); // isExistNewerSource (forces shader recompilation)*/
     }
     break;
     case INITIALD_4_REVG:
@@ -1434,9 +1378,15 @@ int initPatch()
         patchMemory(0x082f4396, "c0270900");    // tickInitStoreNetwork
         patchMemory(0x082f4efb, "e94d010000");  // tickWaitDHCP
         patchMemory(0x082f6d5b, "EB");          // Skip Kickback initialization
-        //patchMemory(0x087e9eac, "c2");          // Skips initialization
-        //patchMemory(0x087e9ebc, "3f36");        // Skips initialization
-        setVariable(0x08599819, 0x000126e9);    // Avoid Full Screen set from Game
+        patchMemory(0x087e9eac, "c2");          // Skips initialization
+
+        patchMemory(0x082414FF, "e933000000");
+        setVariable(0x08599819, 0x000126e9); // Avoid Full Screen set from Game
+
+        patchMemory(0x0820A911, "A8A07C08"); // enable virtual card
+        patchMemory(0x0819161F, "74");       // enable card behavior emulation
+        detourFunction(0x085957F6, checkTrgOn);
+
 
         if (GPUVendor != NVIDIA_GPU)
         {
@@ -1452,6 +1402,72 @@ int initPatch()
         }
         patchMemory(0x08588f73, "31C090");      // cgCreateProgram args argument to 0;
         detourFunction(0x08271cec, stubRetOne); // isExistNewerSource (forces shader recompilation)
+
+        if (config->net_enable == 1)
+        {
+            int count;
+            char **subnet = StrToAscii(config->net_subnet, &count);
+            if (subnet != NULL)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    printf("formatted subnet: %s\n", subnet[i]);
+                }
+                patchMemory(0x082423C8, subnet[0]);
+                patchMemory(0x082423D3, subnet[1]);
+                patchMemory(0x082423DE, subnet[2]);
+                patchMemory(0x082423E9, subnet[3]);
+            }
+        }
+
+        if (config->dns_enable == 1)
+        {
+            dns_entry_init();
+        }
+    }
+    break;
+    case INITIALD_4_REVG_SERVERBOX:
+    {
+        if (config->showDebugMessages == 1)
+        {
+            setVariable(0x08350718, 2);          // amBackupDebugLevel
+            setVariable(0x08350720, 2);          // amCreditDebugLevel
+            setVariable(0x08350978, 2);          // amDipswDebugLevel
+            setVariable(0x0835097C, 2);          // amDongleDebugLevel
+            setVariable(0x08350980, 2);          // amEepromDebugLevel
+            setVariable(0x08350984, 2);          // amHwmonitorDebugLevel
+            setVariable(0x08350988, 2);          // amJvsDebugLevel
+            setVariable(0x0835098C, 2);          // amLibDebugLevel
+            setVariable(0x08350990, 2);          // amMiscDebugLevel
+            setVariable(0x08350998, 2);          // amSysDataDebugLevel
+            setVariable(0x083509A0, 2);          // bcLibDebugLevel
+            setVariable(0x08350994, 2);          // amOsinfoDebugLevel
+            setVariable(0x083509A4, 0x0FFFFFFF); // s_logMask
+        }
+        // Security
+        detourFunction(0x080FCA5A, amDongleInit);
+        detourFunction(0x080FB4A5, amDongleIsAvailable);
+        detourFunction(0x080FBF09, amDongleUpdate);
+        detourFunction(0x080FC921, amDongleUserInfoEx);
+        detourFunction(0x080FC40E, stubRetOne); // amDongleDecryptEx
+        // memcpy(elfID, (void *)0x087929d8, 4); // Gets gameID from the ELF
+        //   Fixes
+        amDipswContextAddr = (void *)0x08358648; // Address of amDipswContext
+        detourFunction(0x080FB238, amDipswInit);
+        detourFunction(0x080FB2BC, amDipswExit);
+        detourFunction(0x080FB331, amDipswGetData);
+        detourFunction(0x080FB3A8, amDipswSetLed); // amDipswSetLED
+
+        detourFunction(0x08078D5C, drawText);   // Hook onto DemoDraw::DrawTextA
+        detourFunction(0x0807FAB6, stubRetOne); // doDHCPClient
+        detourFunction(0x08104032, stubRetZero);
+        patchMemory(0x0807FCF0, "eb"); // skip gateway check
+        patchMemory(0x0807FD50, "eb"); // skip dns check
+
+        if (config->dns_enable == 1)
+        {
+            dns_entry_init();
+        }
     }
     break;
     case INITIALD_5_EXP:
@@ -1684,7 +1700,7 @@ int initPatch()
         detourFunction(0x080ff6f3, amDipswSetLed); // amDipswSetLED
 
         detourFunction(0x0807925c, drawText); // Hook onto DemoDraw::DrawTextA
-        detourFunction(0x0807feda, getHostByName);
+        //detourFunction(0x0807feda, getHostByName);
         detourFunction(0x081186e4, stubRetThree); // altrServer()
         patchMemory(0x080805e2, "e937010000");    // Skip network setup
         detourFunction(0x0807f4ba, stubRetOne);
@@ -1731,15 +1747,13 @@ int initPatch()
         detourFunction(0x08307b62, stubRetOne);     // Skip Kickback initialization
         detourFunction(0x084de0dc, stubRetZero);    // doesNeedRollerCleaning
         detourFunction(0x084de0f8, stubRetZero);    // doesNeedStockerCleaning
+        detourFunction(0x0827CEE4, stubRetZero);
         patchMemory(0x089e308c, "BA");           // Skips initialization
         patchMemory(0x08788e59, "e92601000090");    // Prevents Full Screen set from the game
 
         patchMemory(0x08441f99, "eb60");            // tickInitAddress
 		patchMemory(0x08332AD4, "30302E30");        // 192.168.37.0/24 -> 192.168.00.0/24
         patchMemory(0x0828471A, "889b9b08");        // enable virtual card
-        //detourFunction(0x081cfe8e, stubRetOne);
-        // patchMemory(0x081cf704, "75");08776906
-
         patchMemory(0x081cf685, "74");              // enable card behavior emulation
         detourFunction(0x08776906, checkTrgOn);
 
@@ -1758,6 +1772,29 @@ int initPatch()
         detourFunction(0x08388cb4, stubRetOne); // isExistNewerSource
         detourFunction(0x0807b370, gl_XGetProcAddressARB);
         patchMemory(0x0874433e, "00"); // Fix cutscenes
+
+        if (config->net_enable == 1)
+        {
+            int count;
+            char **subnet = StrToAscii(config->net_subnet, &count);
+            if (subnet != NULL)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    printf("formatted subnet: %s\n", subnet[i]);
+                }
+                patchMemory(0x08332ABE, subnet[0]);
+                patchMemory(0x08332AC9, subnet[1]);
+                patchMemory(0x08332AD4, subnet[2]);
+                patchMemory(0x08332ADF, subnet[3]);
+            }
+        }
+
+        if (config->dns_enable == 1)
+        {
+            dns_entry_init();
+        }
+
     }
     break;
     case INITIALD_5_JAP_REVA_SERVERBOX:
@@ -1794,9 +1831,13 @@ int initPatch()
         detourFunction(0x080fbd3c, amDipswSetLed); // amDipswSetLED
 
         detourFunction(0x08078e3c, drawText); // Hook onto DemoDraw::DrawTextA
-        detourFunction(0x0807f74e, getHostByName);
+        //detourFunction(0x0807f74e, getHostByName);
         detourFunction(0x08114034, stubRetThree); // altrServer()
         patchMemory(0x0807fe5a, "e9e9000000");    // Skip network setup
+        if (config->dns_enable == 1)
+        {
+            dns_entry_init();
+        }
     }
     break;
     case INITIALD_5_JAP_REVF: // ID5 - DVP-0070F

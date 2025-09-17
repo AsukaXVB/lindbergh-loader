@@ -1,4 +1,12 @@
-int amOsinfoGetNetworkProperty(unsigned int *param_1);
-uint amOsinfoGetDhcpStatusEth0Ex(unsigned int *param_1);
-typedef struct sockaddr_in Sockaddr;
-bool getIPAddress(char *ifname, Sockaddr *saddr);
+#include <netdb.h>
+void dns_entry_init();
+
+#define MAX_DNS_LENGTH 256
+struct dns_hook_entry
+{
+    char from[MAX_DNS_LENGTH];
+    char to[MAX_DNS_LENGTH];
+};
+
+bool match_domain(const char *target, const char *pattern);
+char **StrToAscii(char *src, int *output_count);

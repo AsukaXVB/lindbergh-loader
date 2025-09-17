@@ -51,6 +51,7 @@
 #include "log.h"
 #include "resources/font.h"
 #include "resources/logo.h"
+#include "network.h"
 
 #define HOOK_FILE_NAME "/dev/zero"
 
@@ -95,6 +96,9 @@ Controllers controllers = {0};
 static int callback(struct dl_phdr_info *info, size_t size, void *data);
 
 uint16_t basePortAddress = 0xFFFF;
+
+extern struct dns_hook_entry* dns_hook_entries;
+extern int dns_hook_nentries;
 
 /**
  * @brief Signal handler for SIGSEGV.
@@ -1288,7 +1292,8 @@ ssize_t write(int fd, const void *buf, size_t count)
 int ioctl(int fd, unsigned int request, void *data)
 {
     int (*_ioctl)(int fd, int request, void *data) = dlsym(RTLD_NEXT, "ioctl");
-
+    char* nic;
+    EmulatorConfig* config = getConfig();
     if (fd == hooks[EEPROM])
     {
         if (request == 0xC04064A0)
@@ -1309,6 +1314,11 @@ int ioctl(int fd, unsigned int request, void *data)
             memcpy(data, &d, sizeof(uint8_t));
         }
         return 0;
+    }
+
+    if (data != NULL && (strcmp((char*)data, "eth0") == 0))
+    {
+        strcpy((char*)data, config->net_nic);
     }
 
     return _ioctl(fd, request, data);
@@ -1770,4 +1780,26 @@ struct tm *localtime_r(const time_t *timep, struct tm *result)
         return res;
     }
     return _localtime_r(timep, result);
+}
+
+int gethostbyname_r(const char* name, struct hostent* result_buf, char* buf, size_t buflen, struct hostent** result, int* h_errnop)
+{
+    int ret = 0;
+    int i;
+    const struct dns_hook_entry* pos;
+
+    bool (*_gethostbyname_r)(const char* name, struct hostent* result_buf, char* buf, size_t buflen, struct hostent** result, int* h_errnop)
+        = dlsym(RTLD_NEXT, "gethostbyname_r");
+    for (i = 0; i < dns_hook_nentries; i++)
+    {
+        pos = &dns_hook_entries[i];
+        if (match_domain(name, pos->from))
+        {
+            name = pos->to;
+        }
+    }
+    ret = (int)_gethostbyname_r(name, result_buf, buf, buflen, result, h_errnop);
+    char ip[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, result_buf->h_addr_list[0], ip, sizeof(ip));
+    return ret;
 }
