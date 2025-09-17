@@ -294,6 +294,7 @@ typedef struct
     char dns_default[255];
     char dns_router[16];
     char net_nic[32];
+    char keychip[16];
 } EmulatorConfig;
 
 uint32_t get_crc32(const char *s, ssize_t n);

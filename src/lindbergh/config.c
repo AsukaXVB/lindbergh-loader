@@ -1259,6 +1259,8 @@ int readConfig(FILE *configFile, EmulatorConfig *config)
             else
                 strcpy(config->dns_router, dst_addr);
         }
+        else if (strcmp(command, "KEYCHIP") == 0)
+            strcpy(config->keychip, getNextToken(NULL, " ", &saveptr));
 
 
         else if (strcmp(command, "LINDBERGH_COLOUR") == 0)
@@ -1690,6 +1692,7 @@ int initConfig(const char* configFilePath)
     strcpy(config.dns_default, "0.0.0.0");
     strcpy(config.dns_router, "10.0.0.254");
     strcpy(config.net_nic, "eth0");
+    strcpy(config.keychip, "AAGX-01A52379999");
 
     char filePath[PATH_MAX];
     strncpy(filePath, CONFIG_PATH, PATH_MAX);

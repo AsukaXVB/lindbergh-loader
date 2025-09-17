@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "config.h"
 #include "eeprom_settings.h"
 
 uint32_t crc32_table[255];
@@ -87,11 +87,11 @@ int checkCRCinBuffer(int section)
 
 int createStaticSection()
 {
+    EmulatorConfig *config = getConfig();
     unsigned char *buff = &eepromBuffer[eepromOffsetTable[STATIC].offset];
     memset(buff, 0, eepromOffsetTable[STATIC].size);
     buff[14] = 0;
-    //memcpy(buff + 15, "AAGX-01A00009999", 16);
-    memcpy(buff + 15, "AAGX-01A52379999", 16);
+    memcpy(buff + 15, config->keychip, 16);
     return 0;
 }
 
