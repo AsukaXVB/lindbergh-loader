@@ -291,7 +291,7 @@ typedef struct
     int net_enable;
     int dns_enable;
     char net_subnet[19];
-    char dns_default[16];
+    char dns_default[255];
     char dns_router[16];
     char net_nic[32];
 } EmulatorConfig;
