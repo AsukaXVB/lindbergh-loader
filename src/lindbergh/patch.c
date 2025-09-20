@@ -1116,6 +1116,11 @@ int initPatch()
         patchMemory(0x08799adc, "df");          // Skips initialization
         setVariable(0x085593c9, 0x000126e9);    // Avoid Full Screen set from Game
 
+        //Virtual Card
+        patchMemory(0x081F1E27, "24C77708"); 
+        patchMemory(0x08179BD3, "74");       
+        detourFunction(0x085553A6, checkTrgOn);
+
         if (GPUVendor != NVIDIA_GPU)
         {
             detourFunction(0x08078980, gl_MultiTexCoord2fARB);
@@ -1383,7 +1388,7 @@ int initPatch()
         patchMemory(0x082414FF, "e933000000");
         setVariable(0x08599819, 0x000126e9); // Avoid Full Screen set from Game
 
-        patchMemory(0x0820A911, "A8A07C08"); // enable virtual card
+        patchMemory(0x0820A911, "A8A07C08"); // enable virtual card 24c77708
         patchMemory(0x0819161F, "74");       // enable card behavior emulation
         detourFunction(0x085957F6, checkTrgOn);
 
